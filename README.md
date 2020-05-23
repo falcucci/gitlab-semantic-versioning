@@ -56,38 +56,39 @@ stages:
   - tag-latest
 
 variables:
-  IMAGE_NAME: $CI_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
-
-generate-env-vars:
-  stage: generate-env-vars
-  script:
-    - TAG=$(git describe --tags --always)
-    - echo "export TAG=$TAG" > .variables
-    - echo "export IMAGE=$IMAGE_NAME:$TAG" >> .variables
-    - cat .variables
-  artifacts:
-    paths:
-    - .variables
+  REPOSITORY_URL: https://$NPA_USERNAME:$NPA_PASSWORD@gitlab.luizalabs.com/$CI_PROJECT_PATH.git 
 
 version:
   stage: version
-  image: mrooding/gitlab-semantic-versioning:1.0.0
+  image: falcucci/gpython:1.0.0
   script:
     - python3 /version-update/version-update.py
   only:
-   - master
-
-tag-latest:
-  stage: tag-latest
-  image: docker:18.06.1-ce
+    refs:
+      - master
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /See merge request/
+      
+# for node.js applications
+package:
+  stage: package
   before_script:
-    - source .variables
+    - git reset --hard
+    - git checkout $CI_COMMIT_REF_NAME
+    - git pull origin $CI_COMMIT_REF_NAME
+    - git config --global user.email $GITLAB_EMAIL
+    - git config --global user.name $GITLAB_NAME
+    - git remote set-url --push origin $REPOSITORY_URL
   script:
-    - docker pull $IMAGE
-    - docker tag $IMAGE $IMAGE_NAME:latest
-    - docker push $IMAGE_NAME:latest
+    - NTAG=`eval 'git describe --tags $(git rev-list --tags --max-count=1)'`
+    - npm version --no-git-tag-version $NTAG
+    - git commit -a -m "$NTAG"
+    - git push origin HEAD:$CI_COMMIT_REF_NAME
   only:
-    - tag
+    refs:
+      - master
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /See merge request/
 ```
 
 ## Merge request instructions
