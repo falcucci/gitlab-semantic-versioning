@@ -49,7 +49,6 @@ Add the following variables:
 The pipeline configuration below will:
 1. Generate a unique version tag based on git describe
 2. Update the version for every build on the `master` branch.
-3. Tag the docker image built with the updated version as `latest` only for `tag` builds.
 
 This pipeline omits steps for building the  project and pushing the resulting Docker image to the registry.
 
