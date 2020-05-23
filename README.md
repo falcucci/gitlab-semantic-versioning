@@ -39,6 +39,10 @@ Add the following variables:
 |-----------------|----------------------------------------------------------------------|
 | NPA_USERNAME    | The name of the NPA user created for your group: `${group_name}_npa` |
 | NPA_PASSWORD    | The personal access token with API scope generated for the NPA user  |
+| NPA_EMAIL       | git NPA user email  |
+| NPA_NAME        | git NPA user name  |
+
+
 
 ## Pipeline configuration
 
@@ -76,8 +80,8 @@ package:
     - git reset --hard
     - git checkout $CI_COMMIT_REF_NAME
     - git pull origin $CI_COMMIT_REF_NAME
-    - git config --global user.email $GITLAB_EMAIL
-    - git config --global user.name $GITLAB_NAME
+    - git config --global user.email $NPA_EMAIL
+    - git config --global user.name $NPA_NAME
     - git remote set-url --push origin $REPOSITORY_URL
   script:
     - NTAG=`eval 'git describe --tags $(git rev-list --tags --max-count=1)'`
