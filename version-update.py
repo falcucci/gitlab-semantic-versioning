@@ -67,23 +67,24 @@ def main():
     [verify_env_var_presence(e) for e in env_list]
 
     try:
-        latest = git("describe", "--tags").decode().strip()
+        latest = git("describe", "--tags", "--abbrev=0").decode().strip()
     except subprocess.CalledProcessError:
         # Default to version 1.0.0 if no tags are available
         version = "1.0.0"
     else:
+        old_tag = latest.replace("v", "")
+        version = bump(old_tag)
+
+    try:
         # Skip already tagged commits
-        if '-' not in latest:
-            print(latest)
-            return 0
-
-        version = bump(latest)
-
-    tag_repo(version)
-    print(version)
-
-    return 0
-
+        git("rev-parse", version)
+    except subprocess.CalledProcessError:
+        tag_repo(version)
+        print(version)
+        return 0
+    else:
+        print(latest)
+        return 0
 
 if __name__ == "__main__":
     sys.exit(main())
